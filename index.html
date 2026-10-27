@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>THE MINE — Penetration Testing &amp; Bug Bounty Survey</title>
+<meta name="description" content="A field survey of four bug bounty and VDP programs, 2024–2026: 23 validated seams, one CVE, and the next dig for each.">
+<meta name="author" content="Ahmed Sabry">
+<meta property="og:type" content="website">
+<meta property="og:title" content="THE MINE — Penetration Testing &amp; Bug Bounty Survey">
+<meta property="og:description" content="Four shafts. Twenty-three payable seams. One CVE. An assay of the work and the next cut for each finding.">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0c0a'/%3E%3Crect x='5' y='9' width='4' height='14' fill='%23e3b04b'/%3E%3Crect x='11' y='13' width='3' height='10' fill='%23cb7a4d'/%3E%3Crect x='16' y='7' width='3' height='16' fill='%239aa9ad'/%3E%3Crect x='21' y='15' width='3' height='8' fill='%238ca184'/%3E%3Crect x='26' y='11' width='2' height='12' fill='%236a7263'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<a class="skip" href="#seams">Skip to the seams</a>
+
+<header class="bar">
+  <div class="bar__id">
+    <span class="bar__mark" aria-hidden="true">▚</span>
+    <span>Field survey</span>
+    <span class="dim bar__sep">·</span>
+    <span class="bar__no">No. 26—04</span>
+  </div>
+  <div class="bar__mid">Penetration testing &amp; bug bounty / 2024—2026</div>
+  <div class="bar__right">
+    <span class="pulse" aria-hidden="true"></span>
+    <span>23 payable · 4 shafts</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero__grid">
+        <div>
+          <p class="kicker">A cross-section of four programs</p>
+
+          <h1 class="title">
+            <span class="title__the">The</span>
+            <span class="title__mine">Mine</span>
+          </h1>
+
+          <p class="lede">
+            Four shafts sunk between 2024 and 2026. Twenty-three seams logged as payable,
+            one of them carrying a CVE. What follows is the assay — the finding, the evidence
+            that survived a skeptic, and <em>the next cut</em> a returning surveyor would take.
+          </p>
+
+          <div class="hero__foot">
+            <span>Coverage-gated <b>146/146</b></span>
+            <span>Blind-validated <b>8/8</b></span>
+            <span>CVSS <b>3.1 / 4.0</b></span>
+            <span>Source <b>PENTEST_BUGBOUNTY_CV_SUMMARY.md</b></span>
+          </div>
+        </div>
+
+        <aside class="ledger" aria-label="Survey ledger">
+          <div class="ledger__row">
+            <span class="ledger__n">23</span>
+            <span class="ledger__lab">Validated seams<i>19 itemised below</i></span>
+          </div>
+          <div class="ledger__row">
+            <span class="ledger__n">04</span>
+            <span class="ledger__lab">Shafts sunk<i>4 programs</i></span>
+          </div>
+          <div class="ledger__row">
+            <span class="ledger__n">01</span>
+            <span class="ledger__lab">CVE assigned<i>CVE-2026-41432</i></span>
+          </div>
+          <div class="ledger__row">
+            <span class="ledger__n">06</span>
+            <span class="ledger__lab">Assets worked out<i>barren, not skipped</i></span>
+          </div>
+        </aside>
+      </div>
+
+      <figure class="core">
+        <figcaption class="core__head">
+          <span>Seam log · every assayed seam, in shaft order</span>
+          <b>19 of 23 itemised · click to read</b>
+        </figcaption>
+
+        <div class="core__strip" id="coreStrip"></div>
+        <div class="core__labels" id="coreLabels" aria-hidden="true"></div>
+
+        <div class="core__readout" id="coreReadout">
+          Hover, tap, or tab a seam to read the log.
+        </div>
+
+        <noscript>
+          <p style="margin-top:16px;font-family:var(--font-mono);font-size:.7rem;color:var(--muted)">
+            The seam log needs JavaScript. Every finding below is plain text and reads fine without it.
+          </p>
+        </noscript>
+      </figure>
+    </div>
+  </section>
+
+  <div class="controls" role="region" aria-label="Filter the survey">
+    <div class="wrap">
+      <div class="controls__inner">
+        <div class="fgroup" role="group" aria-label="Filter by shaft">
+          <span class="fgroup__lab">Shaft</span>
+          <button class="chip" type="button" data-filter-shaft="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-filter-shaft="prodege" aria-pressed="false">I · Prodege</button>
+          <button class="chip" type="button" data-filter-shaft="opensea" aria-pressed="false">II · OpenSea</button>
+          <button class="chip" type="button" data-filter-shaft="tesla" aria-pressed="false">III · Tesla</button>
+          <button class="chip" type="button" data-filter-shaft="zendesk" aria-pressed="false">IV · Zendesk</button>
+        </div>
+
+        <div class="fgroup" role="group" aria-label="Filter by grade">
+          <span class="fgroup__lab">Grade</span>
+          <button class="chip" type="button" data-filter-sev="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-sev="critical" data-filter-sev="critical" aria-pressed="false">Critical</button>
+          <button class="chip" type="button" data-sev="high" data-filter-sev="high" aria-pressed="false">High</button>
+          <button class="chip" type="button" data-sev="medium" data-filter-sev="medium" aria-pressed="false">Medium</button>
+          <button class="chip" type="button" data-sev="low" data-filter-sev="low" aria-pressed="false">Low</button>
+          <button class="chip" type="button" data-sev="info" data-filter-sev="info" aria-pressed="false">Info</button>
+        </div>
+
+        <div class="search">
+          <label for="q" class="dim" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search findings</label>
+          <input id="q" type="search" placeholder="Search the seams" autocomplete="off" spellcheck="false">
+          <kbd aria-hidden="true">/</kbd>
+        </div>
+
+        <p class="count" id="count" aria-live="polite"><b>19</b> / 19 seams</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="seams"></div>
+  <div class="empty" id="empty">No seam matches that cut.</div>
+
+  <section class="tailings">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Tailings</h2>
+        <p>Worked out · published anyway</p>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th scope="col">Asset</th><th scope="col">Reason</th><th scope="col">What was actually there</th></tr>
+        </thead>
+        <tbody id="tailingsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sealed">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Sealed</h2>
+        <p>Prepared · not filed · no detail</p>
+      </div>
+      <div class="sealed__grid" id="sealedGrid"></div>
+    </div>
+  </section>
+
+  <section class="mine-git">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>GitHub mining</h2>
+        <p>Static commands · run them yourself</p>
+      </div>
+
+      <div class="term">
+        <div class="term__bar">
+          <span class="term__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="term__title">gh — public api</span>
+          <span class="term__hint">no requests leave this page</span>
+        </div>
+
+        <div class="tabs" id="tabs" role="tablist" aria-label="GitHub mining views"></div>
+        <div class="panel" id="panel" role="tabpanel" tabindex="0"></div>
+
+        <div class="term__foot">
+          <span>Auth <b>GH_TOKEN</b></span>
+          <span>Search limit <b>10 req/min unauth</b></span>
+          <span>Scope <b>in-program assets only</b></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="method">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Gates</h2>
+        <p>Applied to every engagement</p>
+      </div>
+      <div class="gates" id="gates"></div>
+    </div>
+  </section>
+
+  <section class="colophon">
+    <div class="wrap">
+      <div class="colophon__grid">
+        <div>
+          <p>
+            Built from a single source document and published as a static page. No analytics,
+            no trackers, no live target requests. The commands are templates: they run where
+            you run them, against assets you are authorised to test.
+          </p>
+          <p>
+            Findings that are prepared but not yet filed are sealed. Nothing in the sealed band
+            carries a host, a payload, or a reproduction path. Everything else was delivered to
+            the program it belongs to.
+          </p>
+          <p class="sig">Every number here was reproduced twice — once by the tool, once by a skeptic.</p>
+        </div>
+
+        <div class="colophon__cite">
+          <p>
+            <b>Operator</b> Ahmed Sabry<br>
+            <b>Handle</b> <a href="https://github.com/Sabriigsxr">Sabriigsxr</a><br>
+            <b>Span</b> 2024—2026<br>
+            <b>Survey</b> 26—04<br>
+            <b>Compiled</b> 2026-10-23<br>
+            <b>Updated</b> 2026-10-25
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
