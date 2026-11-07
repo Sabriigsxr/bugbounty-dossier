@@ -34,7 +34,7 @@ it was a validated finding; a chain of negatives is published as `TRACE` rather 
 ```
 index.html          page shell
 assets/style.css    all styling
-assets/app.js       render + filter + copy, no dependencies
+assets/app.js       render + advanced search + filter + highlight + keyboard + copy, no dependencies
 assets/data.js      the survey data — edit here to change the page
 .nojekyll           serve as-is on GitHub Pages
 ```

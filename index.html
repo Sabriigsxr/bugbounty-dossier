@@ -28,7 +28,7 @@
     <span class="bar__mark" aria-hidden="true">▚</span>
     <span>Field survey</span>
     <span class="dim bar__sep">·</span>
-    <span class="bar__no">No. 26—04</span>
+    <span class="bar__no">No. 26—05</span>
   </div>
   <div class="bar__mid">Penetration testing &amp; bug bounty / 2024—2026</div>
   <div class="bar__right">
@@ -97,6 +97,15 @@
           Hover, tap, or tab a seam to read the log.
         </div>
 
+        <div class="core__legend" aria-label="Severity legend">
+          <span><i style="--dot:var(--sev-critical)"></i>Critical</span>
+          <span><i style="--dot:var(--sev-high)"></i>High</span>
+          <span><i style="--dot:var(--sev-medium)"></i>Medium</span>
+          <span><i style="--dot:var(--sev-low)"></i>Low</span>
+          <span><i style="--dot:var(--sev-info)"></i>Info</span>
+          <span><i class="hatched" aria-hidden="true"></i>Sealed</span>
+        </div>
+
         <noscript>
           <p style="margin-top:16px;font-family:var(--font-mono);font-size:.7rem;color:var(--muted)">
             The seam log needs JavaScript. Every finding below is plain text and reads fine without it.
@@ -108,9 +117,26 @@
 
   <div class="controls" role="region" aria-label="Filter the survey">
     <div class="wrap">
-      <div class="controls__inner">
-        <div class="fgroup" role="group" aria-label="Filter by shaft">
-          <span class="fgroup__lab">Shaft</span>
+      <div class="controls__top">
+        <div class="search search--lg">
+          <span class="search__icon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span>
+          <label for="q" class="dim" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search findings</label>
+          <input id="q" type="search" placeholder="Search seams, ids, classes, CVEs… / to focus · Esc to clear" autocomplete="off" spellcheck="false" aria-describedby="searchHint">
+          <button class="search__clear" id="searchClear" type="button" aria-label="Clear search" hidden>×</button>
+          <kbd aria-hidden="true">/</kbd>
+        </div>
+        <p class="count" id="count" aria-live="polite"><b>31</b> / 31 seams</p>
+        <div class="actions">
+          <button class="ghost" id="expandAll" type="button">Expand</button>
+          <button class="ghost" id="collapseAll" type="button">Collapse</button>
+          <button class="ghost ghost--danger" id="clearFilters" type="button">Reset</button>
+        </div>
+      </div>
+      <div class="controls__row controls__row--shaft">
+        <span class="fgroup__lab" aria-hidden="true">Shaft</span>
+        <div class="fgroup fgroup--scroll" role="group" aria-label="Filter by shaft">
           <button class="chip" type="button" data-filter-shaft="all" aria-pressed="true">All</button>
           <button class="chip" type="button" data-filter-shaft="prodege" aria-pressed="false">I · Prodege</button>
           <button class="chip" type="button" data-filter-shaft="opensea" aria-pressed="false">II · OpenSea</button>
@@ -124,9 +150,10 @@
           <button class="chip" type="button" data-filter-shaft="rpgstash" aria-pressed="false">X · RPGStash</button>
           <button class="chip" type="button" data-filter-shaft="digitalplayground" aria-pressed="false">XI · Digital</button>
         </div>
-
-        <div class="fgroup" role="group" aria-label="Filter by grade">
-          <span class="fgroup__lab">Grade</span>
+      </div>
+      <div class="controls__row controls__row--sev">
+        <span class="fgroup__lab" aria-hidden="true">Severity</span>
+        <div class="fgroup" role="group" aria-label="Filter by severity">
           <button class="chip" type="button" data-filter-sev="all" aria-pressed="true">All</button>
           <button class="chip" type="button" data-sev="critical" data-filter-sev="critical" aria-pressed="false">Critical</button>
           <button class="chip" type="button" data-sev="high" data-filter-sev="high" aria-pressed="false">High</button>
@@ -134,20 +161,16 @@
           <button class="chip" type="button" data-sev="low" data-filter-sev="low" aria-pressed="false">Low</button>
           <button class="chip" type="button" data-sev="info" data-filter-sev="info" aria-pressed="false">Info</button>
         </div>
-
-        <div class="search">
-          <label for="q" class="dim" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search findings</label>
-          <input id="q" type="search" placeholder="Search the seams" autocomplete="off" spellcheck="false">
-          <kbd aria-hidden="true">/</kbd>
-        </div>
-
-        <p class="count" id="count" aria-live="polite"><b>31</b> / 31 seams</p>
+        <span class="hint" id="searchHint">Multi-word = all words · “exact phrase” · -exclude · ←→ chips · ↑↓ seams · Enter opens first</span>
       </div>
     </div>
   </div>
 
   <div id="seams"></div>
-  <div class="empty" id="empty">No seam matches that cut.</div>
+  <div class="empty" id="empty" role="status" aria-live="polite">
+    <p id="emptyNote">No seam matches that cut.</p>
+    <button class="ghost" id="clearEmpty" type="button">Clear filters</button>
+  </div>
 
   <section class="tailings">
     <div class="wrap">

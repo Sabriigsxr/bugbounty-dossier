@@ -131,7 +131,7 @@
 
     return (
       '<article class="vein" id="' + esc(v.id) + '" data-vein="' + esc(v.id) + '" data-severity="' + esc(v.severity) + '" data-shaft="' + esc(v.shaftId) + '" data-search="' +
-      esc([v.id, v.title, v.klass, v.cve || "", v.detail, v.impact].join(" ").toLowerCase()) + '">' +
+      esc([v.id, v.title, v.klass, v.grade || "", v.severity, v.cve || "", v.shaftName || "", v.detail, v.impact, v.evidence].join(" ").toLowerCase()) + '">' +
         '<h3 class="vein__h">' +
           '<button class="vein__head" type="button" aria-expanded="false" aria-controls="' + bodyId + '">' +
             '<span class="vein__top">' +
@@ -171,6 +171,7 @@
     DATA.shafts.forEach(function (shaft) {
       var cards = shaft.veins.map(function (v) {
         v.shaftId = shaft.id;
+        v.shaftName = shaft.name;
         return veinHtml(v);
       }).join("");
 
@@ -311,17 +312,175 @@
     });
   }
 
+  /* ---------------- search engine ----------------
+     Token AND + "phrase" + -negation. Normalised matching so
+     "xss", "x-xss" and "hsts" all find each other. No deps. */
+
+  function norm(s) {
+    return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function parseQuery(raw) {
+    var out = { terms: [], phrases: [], neg: [] };
+    var s = String(raw || "").trim();
+    if (!s) return out;
+    var re = /"([^"]+)"|(\S+)/g, m;
+    while ((m = re.exec(s))) {
+      if (m[1]) out.phrases.push(m[1].toLowerCase());
+      else if (m[2]) {
+        var t = m[2];
+        if (t[0] === "-" && t.length > 1) out.neg.push(t.slice(1).toLowerCase());
+        else out.terms.push(t.toLowerCase());
+      }
+    }
+    return out;
+  }
+
+  function haystack(card) {
+    var raw = card.getAttribute("data-search") || "";
+    return { raw: raw, norm: norm(raw) };
+  }
+
+  function matches(card, parsed) {
+    var h = haystack(card);
+    function has(term) {
+      if (h.raw.indexOf(term) !== -1) return true;
+      var n = norm(term);
+      return n && h.norm.indexOf(n) !== -1;
+    }
+    var i;
+    for (i = 0; i < parsed.terms.length; i++) if (!has(parsed.terms[i])) return false;
+    for (i = 0; i < parsed.phrases.length; i++) if (!has(parsed.phrases[i])) return false;
+    for (i = 0; i < parsed.neg.length; i++) if (has(parsed.neg[i])) return false;
+    return true;
+  }
+
+  function escapeRe(s) {
+    return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  /* Wrap visible matches in <mark> inside escape-safe text. */
+  function highlightText(rawText, parsed) {
+    var escaped = esc(rawText);
+    var terms = [];
+    parsed.phrases.concat(parsed.terms).forEach(function (t) {
+      var n = t.trim();
+      if (n) terms.push(n);
+    });
+    /* longest first so phrases win over single words */
+    terms.sort(function (a, b) { return b.length - a.length; });
+    terms.forEach(function (term) {
+      if (!term) return;
+      try {
+        var re = new RegExp("(" + escapeRe(esc(term)) + ")", "gi");
+        escaped = escaped.replace(re, "<mark>$1</mark>");
+      } catch (e) { /* invalid pattern: skip */ }
+    });
+    /* avoid nested marks */
+    return escaped.replace(/<mark>([^<]*?)<mark>/g, "<mark>$1").replace(/<\/mark>([^<]*?)<\/mark>/g, "$1</mark>");
+  }
+
+  var veinDataById = {};
+
+  function paintHighlights(parsed) {
+    $$(".vein").forEach(function (card) {
+      var id = card.getAttribute("data-vein");
+      var v = veinDataById[id];
+      if (!v) return;
+      var titleEl = $(".vein__title", card);
+      if (titleEl) titleEl.innerHTML = parsed.terms.length || parsed.phrases.length ? highlightText(v.title, parsed) : esc(v.title);
+      var base = card.getAttribute("data-severity") ? 0 : 0;
+      var cols = $$(".assay__col p", card);
+      var texts = [v.detail, v.impact, v.evidence];
+      cols.forEach(function (el, idx) {
+        if (texts[idx] == null) return;
+        el.innerHTML = parsed.terms.length || parsed.phrases.length ? highlightText(texts[idx], parsed) : esc(texts[idx]);
+      });
+      void base;
+    });
+  }
+
+  function syncChips() {
+    $$("[data-filter-shaft]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-filter-shaft") === state.shaft ? "true" : "false");
+    });
+    $$("[data-filter-sev]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-filter-sev") === state.severity ? "true" : "false");
+    });
+  }
+
+  function buildChipCounts() {
+    var byShaft = {}, bySev = {};
+    DATA.shafts.forEach(function (s) {
+      byShaft[s.id] = s.veins.length;
+      s.veins.forEach(function (v) { bySev[v.severity] = (bySev[v.severity] || 0) + 1; });
+    });
+    $$("[data-filter-shaft]").forEach(function (b) {
+      var id = b.getAttribute("data-filter-shaft");
+      var n = id === "all" ? DATA.shafts.reduce(function (a, s) { return a + s.veins.length; }, 0) : (byShaft[id] || 0);
+      if (!b.querySelector(".chip__n")) {
+        var span = document.createElement("span");
+        span.className = "chip__n";
+        span.setAttribute("aria-hidden", "true");
+        b.appendChild(span);
+      }
+      b.querySelector(".chip__n").textContent = n;
+    });
+    $$("[data-filter-sev]").forEach(function (b) {
+      var id = b.getAttribute("data-filter-sev");
+      var total = DATA.shafts.reduce(function (a, s) { return a + s.veins.length; }, 0);
+      var n = id === "all" ? total : (bySev[id] || 0);
+      if (!b.querySelector(".chip__n")) {
+        var span2 = document.createElement("span");
+        span2.className = "chip__n";
+        span2.setAttribute("aria-hidden", "true");
+        b.appendChild(span2);
+      }
+      b.querySelector(".chip__n").textContent = n;
+    });
+  }
+
+  function pushUrl() {
+    try {
+      var params = new URLSearchParams();
+      if (state.q) params.set("q", state.q);
+      if (state.shaft !== "all") params.set("shaft", state.shaft);
+      if (state.severity !== "all") params.set("sev", state.severity);
+      var qs = params.toString();
+      var url = location.pathname + (qs ? "?" + qs : "") + location.hash;
+      history.replaceState(null, "", url);
+    } catch (e) { /* file:// etc: best effort */ }
+  }
+
+  function readUrl() {
+    try {
+      var params = new URLSearchParams(location.search);
+      if (params.get("q")) state.q = params.get("q");
+      var shaft = params.get("shaft");
+      var sev = params.get("sev");
+      if (shaft && document.querySelector('[data-filter-shaft="' + shaft + '"]')) state.shaft = shaft;
+      if (sev && document.querySelector('[data-filter-sev="' + sev + '"]')) state.severity = sev;
+      var input = $("#q");
+      if (input && state.q) input.value = state.q;
+    } catch (e) { /* ignore */ }
+  }
+
+  function visibleVeinCards() {
+    return $$(".vein").filter(function (c) { return !c.hidden; });
+  }
+
   /* ---------------- filters ---------------- */
 
   var state = { shaft: "all", severity: "all", q: "" };
 
   function applyFilters() {
+    var parsed = parseQuery(state.q);
     var shown = 0;
 
     $$(".vein").forEach(function (card) {
       var okShaft = state.shaft === "all" || card.getAttribute("data-shaft") === state.shaft;
       var okSev = state.severity === "all" || card.getAttribute("data-severity") === state.severity;
-      var okQ = !state.q || card.getAttribute("data-search").indexOf(state.q) !== -1;
+      var okQ = matches(card, parsed);
       var ok = okShaft && okSev && okQ;
       card.hidden = !ok;
       if (ok) shown++;
@@ -332,8 +491,14 @@
       sec.hidden = !any;
     });
 
+    paintHighlights(parsed);
+
     var empty = $("#empty");
     if (empty) empty.setAttribute("data-on", shown === 0 ? "1" : "0");
+    var emptyNote = $("#emptyNote");
+    if (emptyNote && shown === 0) {
+      emptyNote.textContent = state.q ? "No seams match \u201C" + state.q + "\u201D under the current filters." : "No seam matches that cut.";
+    }
 
     /* the seam log mirrors the filter: worked-out seams fade, they do not vanish */
     $$(".seam[data-seam]").forEach(function (s) {
@@ -342,14 +507,35 @@
     });
 
     var out = $("#count");
-    if (out) out.innerHTML = "<b>" + shown + "</b> / " + $$(".vein").length + " seams";
+    var total = $$(".vein").length;
+    if (out) out.innerHTML = "<b>" + shown + "</b> / " + total + " seams";
+
+    var clearBtn = $("#searchClear");
+    if (clearBtn) clearBtn.hidden = !state.q;
+
+    pushUrl();
+  }
+
+  function clearAll() {
+    state.shaft = "all";
+    state.severity = "all";
+    state.q = "";
+    var input = $("#q");
+    if (input) input.value = "";
+    syncChips();
+    applyFilters();
   }
 
   function bindFilters() {
+    DATA.shafts.forEach(function (s) {
+      s.veins.forEach(function (v) { veinDataById[v.id] = v; });
+    });
+    buildChipCounts();
+
     $$("[data-filter-shaft]").forEach(function (b) {
       b.addEventListener("click", function () {
         state.shaft = b.getAttribute("data-filter-shaft");
-        $$("[data-filter-shaft]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        syncChips();
         applyFilters();
       });
     });
@@ -357,18 +543,64 @@
     $$("[data-filter-sev]").forEach(function (b) {
       b.addEventListener("click", function () {
         state.severity = b.getAttribute("data-filter-sev");
-        $$("[data-filter-sev]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        syncChips();
         applyFilters();
       });
     });
 
     var input = $("#q");
+    var debounceTimer;
     if (input) {
       input.addEventListener("input", function () {
-        state.q = input.value.trim().toLowerCase();
-        applyFilters();
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function () {
+          state.q = input.value.trim();
+          applyFilters();
+        }, 120);
+      });
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          input.value = "";
+          state.q = "";
+          applyFilters();
+          input.blur();
+        }
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          var cards = visibleVeinCards();
+          if (!cards.length) return;
+          e.preventDefault();
+          var dir = e.key === "ArrowDown" ? 1 : -1;
+          var heads = cards.map(function (c) { return $(".vein__head", c); }).filter(Boolean);
+          var idx = heads.indexOf(document.activeElement);
+          var next = idx === -1 ? (dir > 0 ? 0 : heads.length - 1) : (idx + dir + heads.length) % heads.length;
+          heads[next].focus();
+        }
+        if (e.key === "Enter") {
+          var first = visibleVeinCards()[0];
+          if (first) jumpTo(first.getAttribute("data-vein"));
+        }
       });
     }
+    var sc = $("#searchClear");
+    if (sc) sc.addEventListener("click", function () {
+      if (input) { input.value = ""; input.focus(); }
+      state.q = "";
+      applyFilters();
+    });
+    var cf = $("#clearFilters");
+    if (cf) cf.addEventListener("click", clearAll);
+    var ce = $("#clearEmpty");
+    if (ce) ce.addEventListener("click", clearAll);
+    var ex = $("#expandAll");
+    if (ex) ex.addEventListener("click", function () {
+      visibleVeinCards().forEach(function (c) { setOpen(c, true); });
+      toast("Expanded visible seams");
+    });
+    var co = $("#collapseAll");
+    if (co) co.addEventListener("click", function () {
+      visibleVeinCards().forEach(function (c) { setOpen(c, false); });
+    });
   }
 
   /* ---------------- expansion + copy + jump ---------------- */
@@ -387,16 +619,7 @@
     var card = document.getElementById(id);
     if (!card) return;
     /* clear filters if the card is hidden by them */
-    if (card.hidden) {
-      state.shaft = "all";
-      state.severity = "all";
-      state.q = "";
-      var q = $("#q");
-      if (q) q.value = "";
-      $$("[data-filter-shaft]").forEach(function (x) { x.setAttribute("aria-pressed", x.getAttribute("data-filter-shaft") === "all" ? "true" : "false"); });
-      $$("[data-filter-sev]").forEach(function (x) { x.setAttribute("aria-pressed", x.getAttribute("data-filter-sev") === "all" ? "true" : "false"); });
-      applyFilters();
-    }
+    if (card.hidden) clearAll();
     setOpen(card, true);
     card.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
     if (!reduceMotion) {
@@ -489,12 +712,19 @@
     renderMethod();
     renderGithub();
     bindFilters();
+    readUrl();
+    syncChips();
     bindCards();
     applyFilters();
 
-    /* "/" focuses search */
+    /* "/" and Ctrl/Cmd+K focus search, "/" never hijacks inputs */
     document.addEventListener("keydown", function (e) {
-      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+      var isSlash = e.key === "/";
+      var isK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k";
+      if (!isSlash && !isK) return;
+      if (e.metaKey && !isK && isSlash) return;
+      if (e.ctrlKey && !isK) return;
+      if (e.altKey) return;
       var tag = (document.activeElement && document.activeElement.tagName) || "";
       if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
       var q = $("#q");
