@@ -1,6 +1,6 @@
 /* ============================================================
    THE MINE — survey data
-   Derived from PENTEST_BUGBOUNTY_CV_SUMMARY.md (2026-10-25).
+   Derived from PENTEST_BUGBOUNTY_CV_SUMMARY.md (2026-11-07).
    Every item below is itemised in that document. Items that are
    prepared but not yet filed live in `sealed` and carry no
    reproduction detail.
@@ -8,9 +8,9 @@
 
 window.MINE = {
   meta: {
-    survey: "26-04",
+    survey: "26-05",
     compiled: "2026-10-23",
-    updated: "2026-10-25",
+    updated: "2026-11-07",
     operator: "Ahmed Sabry",
     handle: "Sabriigsxr",
     span: "2024—2026",
@@ -18,8 +18,8 @@ window.MINE = {
   },
 
   ledger: [
-    { value: "23", label: "Validated seams", note: "per source ledger" },
-    { value: "04", label: "Shafts sunk", note: "4 programs" },
+    { value: "35", label: "Validated seams", note: "per source ledger" },
+    { value: "11", label: "Shafts sunk", note: "11 programs" },
     { value: "01", label: "CVE assigned", note: "CVE-2026-41432" },
     { value: "06", label: "Assets worked out", note: "barren, not skipped" }
   ],
@@ -453,6 +453,337 @@ window.MINE = {
           }
         }
       ]
+    },
+
+    {
+      id: "ticketsmarche",
+      numeral: "V",
+      name: "TicketsMarche",
+      scope: "ticketsmarche.com · www / app / portal / api",
+      status: "PART-WORKED",
+      statusTone: "partial",
+      sunk: "165+ subdomains · 9 cells",
+      note: "A ticketing estate behind a single SPA fallback. Headers were thin, the catch-all was thick, and every masked-test class collapsed into one misconfiguration instead of five findings.",
+      veins: [
+        {
+          id: "TKM-01",
+          title: "Missing security headers on app, portal, cdn",
+          klass: "MISCONFIG",
+          severity: "low",
+          grade: "LOW-GRADE",
+          score: "—",
+          scale: "unscored",
+          detail:
+            "app, portal, and cdn returned no Strict-Transport-Security, no Content-Security-Policy, no X-Frame-Options, no X-Content-Type-Options, no Referrer-Policy, and no Permissions-Policy. www carried HSTS, CSP, X-Frame-Options DENY, and nosniff, with a weak CSP allowing unsafe-inline and unsafe-eval, and was missing Permissions-Policy.",
+          impact:
+            "Clickjacking on frameable pages, MIME sniffing, and downgrade on hosts that never set HSTS. Blast radius is the browser layer, which is why this grades low and not high.",
+          evidence: "Header capture per subdomain, seven attributes compared side by side. Re-checked before grading down from the source High to reflect demonstrated impact.",
+          next: {
+            label: "Diff the header set across all live hosts",
+            cmd:
+              "for h in www app portal api; do echo \"== $h\"; curl -sI https://$h.ticketsmarche.com/ | grep -Ei 'strict-transport|content-security|x-frame|x-content|referrer|permissions'; done",
+            note: "Absent HSTS plus absent CSP is the pair that matters. Missing Permissions-Policy alone is not a seam."
+          }
+        },
+        {
+          id: "TKM-02",
+          title: "Wildcard catch-all returns 200 for every path",
+          klass: "MISCONFIG",
+          severity: "low",
+          grade: "LOW-GRADE",
+          score: "—",
+          scale: "unscored",
+          detail:
+            "Every tested path on www, app, portal, and api returned HTTP 200 with identical SPA body sizes (283,267 / 8,863 / 5,626 / 558 bytes). Non-existent pages, admin paths, and /api/ routes all fell back to the frontend instead of returning 404, 401, or 403.",
+          impact:
+            "Enumeration, admin, SSRF, and IDOR testing all read the same SPA HTML. The routing masks real controls and makes scanner verdicts unreliable until the fallback is fixed.",
+          evidence: "Paired request sizes across randomised non-existent paths plus 60 API/auth variants returning identical 300-byte SPA on api. IDOR across 9 user IDs and 4 endpoint types returned identical body and is recorded as a false positive, not a vein.",
+          next: {
+            label: "Prove the fallback with a random path",
+            cmd:
+              "for p in /nonexistent-page-12345 /api/nonexistent-endpoint /admin/nonexistent; do curl -s -o /dev/null -w \"$p %{http_code} %{size_download}c\\n\" https://www.ticketsmarche.com$p; done",
+            note: "Uniform 200 with uniform size is the fallback. A 404 on any one path proves the rewrite is scoped."
+          }
+        },
+        {
+          id: "TKM-03",
+          title: "robots.txt discloses the api surface",
+          klass: "ENUMERATION",
+          severity: "info",
+          grade: "TRACE",
+          score: "—",
+          scale: "asset map",
+          detail:
+            "www robots.txt discloses Disallow: /api/ for every crawler, and portal discloses /cinema and /request-event. The files advertise which surfaces exist while telling well-behaved crawlers to stay away.",
+          impact:
+            "Attack surface, not a vulnerability. A map of where to point the next test, including the API that TKM-02 shows is masked.",
+          evidence: "robots.txt fetch per host, path list extracted. Recorded as TRACE because robots.txt alone proves no access-control gap.",
+          next: {
+            label: "Use the disclosure to bound the next survey",
+            cmd:
+              "curl -s https://www.ticketsmarche.com/robots.txt | grep -i disallow; curl -s https://portal.ticketsmarche.com/robots.txt | grep -i disallow",
+            note: "Treat every Disallow as a candidate, then check whether the path returns SPA fallback or a real 404."
+          }
+        }
+      ]
+    },
+
+    {
+      id: "win",
+      numeral: "VI",
+      name: "1win Forum",
+      scope: "forum.1win.io · IPS · Cloudflare WAF",
+      status: "PART-WORKED",
+      statusTone: "partial",
+      sunk: "manual curl + WAF partial bypass",
+      note: "An Invision forum behind Cloudflare. The WAF held for high-severity classes; what remained was a header gap and a robots.txt map, consolidated honestly instead of padded to five Mediums.",
+      veins: [
+        {
+          id: "WIN-01",
+          title: "Missing security headers including Cloudflare error pages",
+          klass: "MISCONFIG",
+          severity: "low",
+          grade: "LOW-GRADE",
+          score: "—",
+          scale: "unscored",
+          detail:
+            "Strict-Transport-Security was missing on the main host and across login, search, and index endpoints. Cloudflare block and error pages on the search path also lacked X-Content-Type-Options, X-XSS-Protection, and Content-Security-Policy, and the main host carried conflicting X-XSS-Protection values (0 alongside 1; mode=block).",
+          impact:
+            "Downgrade and MIME sniffing on the main host before Cloudflare serves a block page, and reduced defense-in-depth on error pages themselves. X-XSS-Protection is legacy protection, which is why this grades low.",
+          evidence: "Header captures on main, login, search, and error-page paths. Seven source items collapsed to one seam; S3, open-redirect, and sitemap candidates marked NOT CONFIRMED were dropped, not published.",
+          next: {
+            label: "Diff headers on normal and error paths",
+            cmd:
+              "curl -s -D- -o /dev/null https://forum.1win.io/ | grep -iE 'strict-transport|x-content|x-xss|content-security'; curl -s -D- -o /dev/null 'https://forum.1win.io/search/?do=quicksearch' | grep -iE 'strict-transport|x-content|x-xss|content-security'",
+            note: "A header present on 200 but missing on the Cloudflare block page is still a gap. An error page with a 200 status is not."
+          }
+        },
+        {
+          id: "WIN-02",
+          title: "robots.txt discloses paths, platform fingerprinted",
+          klass: "ENUMERATION",
+          severity: "info",
+          grade: "TRACE",
+          score: "—",
+          scale: "asset map",
+          detail:
+            "robots.txt discloses /staff/, /login/, /register/, /search/, and /tags/. The markup carries the ipsApp fingerprint identifying Invision Power Board.",
+          impact:
+            "Enumeration aid for the next surveyor. Platform identity sets the patch level to check; it is not itself exploitable.",
+          evidence: "robots.txt fetch plus body marker grep. Published as TRACE alongside the WAF negative: Cloudflare blocked XSS, IDOR, and XXE payloads.",
+          next: {
+            label: "Fingerprint, then check the patch level",
+            cmd:
+              "curl -s https://forum.1win.io/ | grep -io 'ipsApp[^\\\"]*' | head -1; curl -s https://forum.1win.io/robots.txt | grep -i disallow",
+            note: "Version the platform from headers and body before claiming a known-CVE match."
+          }
+        }
+      ]
+    },
+
+    {
+      id: "drypegy",
+      numeral: "VII",
+      name: "Drypegy",
+      scope: "drypegy.com · Shopify storefront",
+      status: "PART-WORKED",
+      statusTone: "partial",
+      sunk: "5 cells · Shopify managed",
+      note: "A Shopify Dawn storefront with strong headers and scoped customer mutations. The only payable edge was rate limiting; the rest was by-design surface and verified positives.",
+      veins: [
+        {
+          id: "DRY-01",
+          title: "No HTTP rate limit on the Storefront GraphQL endpoint",
+          klass: "RATE LIMIT",
+          severity: "low",
+          grade: "LOW-GRADE",
+          score: "—",
+          scale: "unscored",
+          detail:
+            "Fifty consecutive Storefront GraphQL requests returned 200 with no 429 and no Retry-After. Shopify cost-based query limits apply per query cost, but no HTTP-level throttle was observed.",
+          impact:
+            "Enumeration at scale with cheap queries. Cost limiting blunts heavy queries, so the blast radius is pacing and resource use, not data exposure, which is why this grades low.",
+          evidence: "Sequential burst with per-request status codes; all 200s. Customer mutations showed proper scope enforcement and cart quantity validation, recorded as positives in the same shaft.",
+          next: {
+            label: "Push the burst past the cost ceiling",
+            cmd:
+              "for i in $(seq 1 50); do curl -s -o /dev/null -w '%{http_code} ' -X POST https://drypegy.com/api/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ shop { name } }\"}'; done; echo",
+            note: "Fifty 200s on cheap queries is the seam. A 429 on expensive queries is the cost limit working."
+          }
+        },
+        {
+          id: "DRY-02",
+          title: "UCP and MCP discovery is public by design",
+          klass: "MISCONFIG",
+          severity: "info",
+          grade: "TRACE",
+          score: "—",
+          scale: "asset map",
+          detail:
+            "/.well-known/ucp lists the commerce capabilities, payment handlers, and service schemas, and /api/ucp/mcp accepts JSON-RPC initialize. Storefront GraphQL introspection is likewise enabled. All three are intended for public storefront and agent clients.",
+          impact:
+            "A map of the agent commerce surface. No sensitive data was shown to be readable; the risk is abuse of a public interface, which belongs in monitoring, not in a payable claim.",
+          evidence: "Discovery fetch plus initialize handshake. Recorded as TRACE with Introspection accepted as by-design, matching the program's own stance.",
+          next: {
+            label: "Enumerate the agent surface before testing it",
+            cmd:
+              "curl -s https://drypegy.com/.well-known/ucp | jq '.capabilities // .services // keys'",
+            note: "An endpoint that answers initialize with a capability list is advertising. Probe whether create_checkout needs a buyer profile."
+          }
+        }
+      ]
+    },
+
+    {
+      id: "egy4gamers",
+      numeral: "VIII",
+      name: "Egypt4Gamers",
+      scope: "egy4gamers.com · staging WordPress · GTM",
+      status: "PART-WORKED",
+      statusTone: "partial",
+      sunk: "9 subdomains · 3 live",
+      note: "A WordPress staging estate with public REST routes and a public login. The interesting work was downgrading inflated severities and publishing the stack map with the blocked-files negative.",
+      veins: [
+        {
+          id: "EGY-001",
+          title: "WordPress REST exposes user and content routes",
+          klass: "ENUMERATION",
+          severity: "low",
+          grade: "TRACE",
+          score: "—",
+          scale: "unscored",
+          detail:
+            "/wp-json/wp/v2/users and /wp-json/wp/v2/posts returned 200 unauthenticated, listing slugs for the site account, an info account, and an orders account, alongside 45+ advanced-db-cleaner endpoints, WooCommerce, Wordfence, Elementor, RankMath, and WP Rocket routes. wp-admin and wp-login.php were reachable, and ffuf mapped cart, checkout, dashboard, and wp-content paths. load.sgtm and sgtm served Stape GTM containers.",
+          impact:
+            "User enumeration and plugin inventory for targeted guessing. REST exposure alone does not authenticate or execute, which is why this grades low despite the source Critical label.",
+          evidence: "User and post endpoint fetches, ffuf directory map, GTM host banners. Sensitive paths (.env, wp-config backups, backup.sql) returned 403/404 and are recorded as a positive negative, not dropped.",
+          next: {
+            label: "Distinguish public routes from leaked secrets",
+            cmd:
+              "curl -s https://staging.egy4gamers.com/wp-json/wp/v2/users | jq -r '.[].slug' ; curl -s -o /dev/null -w '%{http_code}\\n' https://staging.egy4gamers.com/wp-admin/",
+            note: "Public user slugs are enumeration. A 200 on wp-admin that only redirects to login is not admin access."
+          }
+        }
+      ]
+    },
+
+    {
+      id: "priceless",
+      numeral: "IX",
+      name: "Priceless Demo",
+      scope: "demo.priceless.com",
+      status: "FLOODED",
+      statusTone: "blocked",
+      sunk: "verified subset · negatives published",
+      note: "A demo estate where the verified subset and the full sweep disagreed. The reconciliation is the finding: one soft key issue, one control misread as a vuln, and a clean set of WAF negatives.",
+      veins: [
+        {
+          id: "PRI-01",
+          title: "Google API key ships in client-side JavaScript",
+          klass: "MISCONFIG",
+          severity: "info",
+          grade: "TRACE",
+          score: "—",
+          scale: "unscored",
+          detail:
+            "A Google API key matching the AIza pattern was found in client-served JavaScript on the demo host. Browser keys are commonly public when restricted by HTTP referrer or API scope, and no quota or data abuse was demonstrated.",
+          impact:
+            "Quota burn or impersonated calls only if restrictions are missing. Without a restriction check this is surface, not a payable seam, which is why it grades info.",
+          evidence: "Bundle grep for the key pattern. ApplicationAPIKey was searched in the same bundles and not found; a requirement for that key is a control, not a leak, and was not published as a vein.",
+          next: {
+            label: "Test restrictions before calling it a leak",
+            cmd:
+              "grep -rhoE 'AIza[0-9A-Za-z_-]{35}' ./client-js/ | head -1 | cut -c1-8; curl -s -o /dev/null -w '%{http_code}\\n' https://demo.priceless.com/api/session",
+            note: "A key that only works from the demo origin is restricted. A key that works from anywhere is the seam."
+          }
+        },
+        {
+          id: "PRI-02",
+          title: "WAF and access controls held under test",
+          klass: "NEGATIVE",
+          severity: "info",
+          grade: "TRACE",
+          score: "0",
+          scale: "findings",
+          detail:
+            "SQL injection, XSS, SSRF, and XXE payloads were blocked at the WAF. Product endpoints showed no IDOR, and no ApplicationAPIKey was exposed in client code. Authentication was enforced with no bypass found.",
+          impact:
+            "A bounded negative. It tells the next surveyor which classes to skip and which to route through a change window.",
+          evidence: "Per-class payload matrix with block outcomes, product IDOR series, and bundle key search. Recorded as negatives rather than omitted.",
+          next: {
+            label: "Re-run the blocked classes before trusting the negative",
+            cmd:
+              "for p in '/api/session' '/api/login'; do curl -s -o /dev/null -w \"$p %{http_code}\\n\" \"https://demo.priceless.com$p\"; done",
+            note: "A WAF block today is not a block after a rule change. Re-verify per release."
+          }
+        }
+      ]
+    },
+
+    {
+      id: "rpgstash",
+      numeral: "X",
+      name: "RPGStash",
+      scope: "rpgstash.com/monopoly-go · devgg",
+      status: "FLOODED",
+      statusTone: "blocked",
+      sunk: "WAF-blocked sweep",
+      note: "A gaming storefront where Cloudflare did the work. One thin header gap and one version disclosure survived; the rest of the sweep was blocks, not bypasses.",
+      veins: [
+        {
+          id: "RPG-01",
+          title: "Missing X-XSS-Protection and version disclosure",
+          klass: "MISCONFIG",
+          severity: "low",
+          grade: "LOW-GRADE",
+          score: "—",
+          scale: "unscored",
+          detail:
+            "The storefront responses carried no X-XSS-Protection header. The dev host served /version.json with a build identifier and build time.",
+          impact:
+            "Legacy-browser XSS defense-in-depth only, plus build targeting aid. No exploitable call was shown, which is why this grades low.",
+          evidence: "Header check plus version fetch. API dropdown endpoints returned 401 and admin and config paths returned SPA fallback; those negatives bound the same shaft.",
+          next: {
+            label: "Check the header and the version file together",
+            cmd:
+              "curl -sI https://www.rpgstash.com/monopoly-go/ | grep -i x-xss; curl -s https://devgg.rpgstash.com/version.json",
+            note: "A version string without a known-vuln match is a map entry, not an exploit."
+          }
+        }
+      ]
+    },
+
+    {
+      id: "digitalplayground",
+      numeral: "XI",
+      name: "DigitalPlayground",
+      scope: "digitalplayground.com · realitykings.com",
+      status: "FLOODED",
+      statusTone: "blocked",
+      sunk: "75 + 84 subdomains · WAF-held",
+      note: "Two wildcard estates held by Cloudflare. Apex scanning produced only 403s; the reachable support host showed the real gaps, which is the opposite of what the scanner count claimed.",
+      veins: [
+        {
+          id: "DGP-01",
+          title: "Exposed JavaScript and thin headers on support host",
+          klass: "MISCONFIG",
+          severity: "low",
+          grade: "LOW-GRADE",
+          score: "—",
+          scale: "unscored",
+          detail:
+            "Apex hosts on both domains answered with Cloudflare challenges, but support.digitalplayground.com returned 200 without X-Frame-Options, CSP, HSTS, X-XSS-Protection, or X-Content-Type-Options. Client bundles on the wildcard surface included admin, API monitor, and access group JavaScript plus vite and git config text files.",
+          impact:
+            "Bundle review may surface endpoints and logic to target, and the support host lacks framing and sniffing defenses. No key or credential was shown to be recoverable, which caps this at low.",
+          evidence: "WAF confirm, dirsearch and feroxbuster 403 series, and nuclei with no results on apex; bundle inventory and header capture on the support host. Three duplicate engagement folders collapsed to one.",
+          next: {
+            label: "Separate WAF blocks from reachable hosts",
+            cmd:
+              "wafw00f https://www.digitalplayground.com; curl -sI https://support.digitalplayground.com | grep -iE 'x-frame|content-security|strict-transport|x-content'",
+            note: "A 403 challenge on apex is a control. A 200 with no headers on support is the gap."
+          }
+        }
+      ]
     }
   ],
 
@@ -470,7 +801,10 @@ window.MINE = {
   /* Prepared, not filed. No hosts, no reproduction, no payloads. */
   sealed: [
     { program: "Retail pharmacy (Intigriti)", klass: "WAF / AUTH BYPASS", items: 3, severity: "critical", status: "PREPARED · NOT FILED", note: "Three reports drafted against a live in-scope estate. Detail stays sealed until they are filed and resolved." },
-    { program: "Government assessments", klass: "SUPPLY CHAIN / BRAND", items: 3, severity: "high", status: "PREPARED · NOT FILED", note: "Third-party script allowlist, locale routing, and a coordinated lookalike-brand cluster. Withheld pending disclosure." }
+    { program: "Government assessments", klass: "SUPPLY CHAIN / BRAND", items: 3, severity: "high", status: "PREPARED · NOT FILED", note: "Third-party script allowlist, locale routing, and a coordinated lookalike-brand cluster. Withheld pending disclosure." },
+    { program: "Adobe Stock (bug hunt)", klass: "OPEN REDIRECT / CORS", items: 3, severity: "critical", status: "PREPARED · NOT FILED", note: "Redirect and cross-origin drafts need live body proof and allowlist retest. Detail stays sealed until filed and resolved." },
+    { program: "SHEIN wildcard", klass: "MISCONFIG / AUTHORIZATION", items: 4, severity: "high", status: "PREPARED · NOT FILED", note: "Configuration exposure and authorization drafts need body-hash proof against SPA fallback. Withheld pending disclosure." },
+    { program: "Lightspark API", klass: "AUTH / GRAPHQL", items: 4, severity: "critical", status: "PREPARED · NOT FILED", note: "Mutation authentication drafts need live unauthenticated differential proof and blind validation. Withheld pending disclosure." }
   ],
 
   github: {

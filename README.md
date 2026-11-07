@@ -1,10 +1,10 @@
 # THE MINE
 
-A field survey of four bug bounty and VDP programs, 2024–2026, built as a static page.
+A field survey of eleven bug bounty and VDP programs, 2024–2026, built as a static page.
 
 **Live:** https://sabriigsxr.github.io/bugbounty-dossier/
 
-Four shafts — Prodege VDP, OpenSea, Tesla, Zendesk AI Agents. Nineteen itemised seams,
+Eleven shafts — Prodege VDP, OpenSea, Tesla, Zendesk AI Agents, TicketsMarche, 1win Forum, Drypegy, Egypt4Gamers, Priceless Demo, RPGStash, DigitalPlayground. Thirty-one itemised seams,
 one CVE, six barren assets published anyway, and a next dig for every finding.
 
 ---
@@ -70,12 +70,12 @@ Append an object to the relevant shaft's `veins` array in `assets/data.js`:
 }
 ```
 
-The ledger counts in `index.html` and the `19 of 23` caption are editorial, not computed.
+The ledger counts in `index.html` and the `31 of 35` caption are editorial, not computed.
 Update them when the counts change.
 
 ## Source
 
-Derived from `PENTEST_BUGBOUNTY_CV_SUMMARY.md` (compiled 2026-10-23, updated 2026-10-25).
+Derived from `PENTEST_BUGBOUNTY_CV_SUMMARY.md` (compiled 2026-10-23, updated 2026-11-07).
 The source document is not published here because it contains prepared-but-unfiled findings.
 
 ## Scope
