@@ -18,7 +18,7 @@ window.MINE = {
   },
 
   ledger: [
-    { value: "35", label: "Validated seams", note: "per source ledger" },
+    { value: "52", label: "Bugs hunted with PoC", note: "35 validated + 17 sealed" },
     { value: "11", label: "Shafts sunk", note: "11 programs" },
     { value: "01", label: "CVE assigned", note: "CVE-2026-41432" },
     { value: "06", label: "Assets worked out", note: "barren, not skipped" }

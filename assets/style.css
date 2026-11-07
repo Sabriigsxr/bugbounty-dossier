@@ -85,6 +85,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+@media (max-width: 760px) { body::after { display: none; } }
+@media (prefers-reduced-motion: reduce) { body::after { display: none; } }
 /* grain, fixed, non-interactive */
 body::after {
   content: "";
@@ -391,6 +393,7 @@ body::after {
   .ticker__track { animation: none; }
   .ticker__viewport { overflow-x: auto; }
 }
+@media (max-width: 760px) { .controls { -webkit-backdrop-filter: none; backdrop-filter: none; } }
 @media print {
   .ticker { display: none; }
 }
@@ -482,8 +485,8 @@ body::after {
   top: 0;
   z-index: 30;
   background: rgba(10, 12, 10, .86);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--rule);
   border-top: 1px solid rgba(232, 226, 209, .06);
   padding-block: 10px;
@@ -686,7 +689,10 @@ mark {
 .shaft {
   padding-top: clamp(48px, 6vw, 78px);
   scroll-margin-top: 72px;
+  content-visibility: auto;
+  contain-intrinsic-size: 720px;
 }
+@supports not (content-visibility: auto) { .shaft { content-visibility: visible; } }
 
 .shaft__head {
   display: grid;

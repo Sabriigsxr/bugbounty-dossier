@@ -400,7 +400,22 @@
   var veinDataById = {};
 
   function paintHighlights(parsed) {
+    var hasQ = parsed.terms.length || parsed.phrases.length;
+    if (!hasQ) {
+      /* fast path: restore plain text without regex */
+      $$(".vein").forEach(function (card) {
+        var v = veinDataById[card.getAttribute("data-vein")];
+        if (!v) return;
+        var titleEl = $(".vein__title", card);
+        if (titleEl) titleEl.textContent = v.title;
+        var cols = $$(".assay__col p", card);
+        var texts = [v.detail, v.impact, v.evidence];
+        cols.forEach(function (el, idx) { if (texts[idx] != null) el.textContent = texts[idx]; });
+      });
+      return;
+    }
     $$(".vein").forEach(function (card) {
+      if (card.hidden) return;
       var id = card.getAttribute("data-vein");
       var v = veinDataById[id];
       if (!v) return;

@@ -4,7 +4,7 @@ A field survey of eleven bug bounty and VDP programs, 2024–2026, built as a st
 
 **Live:** https://sabriigsxr.github.io/bugbounty-dossier/
 
-Eleven shafts — Prodege VDP, OpenSea, Tesla, Zendesk AI Agents, TicketsMarche, 1win Forum, Drypegy, Egypt4Gamers, Priceless Demo, RPGStash, DigitalPlayground. Thirty-one itemised seams,
+Eleven shafts — Prodege VDP, OpenSea, Tesla, Zendesk AI Agents, TicketsMarche, 1win Forum, Drypegy, Egypt4Gamers, Priceless Demo, RPGStash, DigitalPlayground. Fifty-two bugs hunted with PoC (35 validated, 17 sealed), thirty-one itemised seams,
 one CVE, six barren assets published anyway, and a next dig for every finding.
 
 ---

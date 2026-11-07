@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>THE MINE — Penetration Testing &amp; Bug Bounty Survey</title>
-<meta name="description" content="A field survey of eleven bug bounty and VDP programs, 2024–2026: 35 validated seams, one CVE, and the next dig for each.">
+<meta name="description" content="A field survey of eleven bug bounty and VDP programs, 2024–2026: 52 bugs hunted with PoC (35 validated, 17 sealed), one CVE, and the next dig for each.">
 <meta name="author" content="Ahmed Sabry">
 <meta property="og:type" content="website">
 <meta property="og:title" content="THE MINE — Penetration Testing &amp; Bug Bounty Survey">
-<meta property="og:description" content="Eleven shafts. Thirty-five seams. One CVE. An assay of the work and the next cut for each finding.">
+<meta property="og:description" content="Eleven shafts. Fifty-two bugs hunted with PoC. One CVE. An assay of the work and the next cut for each finding.">
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0c0a'/%3E%3Crect x='5' y='9' width='4' height='14' fill='%23e3b04b'/%3E%3Crect x='11' y='13' width='3' height='10' fill='%23cb7a4d'/%3E%3Crect x='16' y='7' width='3' height='16' fill='%239aa9ad'/%3E%3Crect x='21' y='15' width='3' height='8' fill='%238ca184'/%3E%3Crect x='26' y='11' width='2' height='12' fill='%236a7263'/%3E%3C/svg%3E">
@@ -33,7 +33,7 @@
   <div class="bar__mid">Penetration testing &amp; bug bounty / 2024—2026</div>
   <div class="bar__right">
     <span class="pulse" aria-hidden="true"></span>
-    <span>35 validated · 11 shafts</span>
+    <span>52 hunted · 11 shafts</span>
   </div>
 </header>
 
@@ -51,7 +51,7 @@
           </h1>
 
           <p class="lede">
-            Eleven shafts sunk between 2024 and 2026. Thirty-five seams logged as validated,
+            Eleven shafts sunk between 2024 and 2026. Fifty-two bugs hunted with PoC — thirty-five validated, seventeen sealed for retest —
             one of them carrying a CVE. What follows is the assay — the finding, the evidence
             that survived a skeptic, and <em>the next cut</em> a returning surveyor would take.
           </p>
@@ -66,8 +66,8 @@
 
         <aside class="ledger" aria-label="Survey ledger">
           <div class="ledger__row">
-            <span class="ledger__n">35</span>
-            <span class="ledger__lab">Validated seams<i>31 itemised below</i></span>
+            <span class="ledger__n">52</span>
+            <span class="ledger__lab">Bugs hunted with PoC<i>35 validated · 17 sealed</i></span>
           </div>
           <div class="ledger__row">
             <span class="ledger__n">11</span>
@@ -87,7 +87,7 @@
       <figure class="core">
         <figcaption class="core__head">
           <span>Finding log · every seam (= one finding), in shaft order</span>
-          <b>31 of 35 itemised · click to read</b>
+          <b>31 itemised · 35 validated of 52 · click to read</b>
         </figcaption>
 
         <div class="core__strip" id="coreStrip"></div>
@@ -132,7 +132,7 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           </span>
           <label for="q" class="dim" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search findings</label>
-          <input id="q" type="search" placeholder="Search seams, ids, classes, CVEs… / to focus · Esc to clear" autocomplete="off" spellcheck="false" aria-describedby="searchHint">
+          <input id="q" type="search" inputmode="search" enterkeyhint="search" placeholder="Search seams, ids, classes, CVEs… / to focus · Esc to clear" autocomplete="off" spellcheck="false" aria-describedby="searchHint">
           <button class="search__clear" id="searchClear" type="button" aria-label="Clear search" hidden>×</button>
           <kbd aria-hidden="true">/</kbd>
         </div>
