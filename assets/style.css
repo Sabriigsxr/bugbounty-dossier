@@ -337,6 +337,68 @@ body::after {
 .core__legend i { width: 10px; height: 10px; background: var(--dot, var(--ash)); display: inline-block; flex: none; }
 .core__legend i.hatched { background: repeating-linear-gradient(45deg, var(--rule-2) 0 3px, transparent 3px 7px); border: 1px solid var(--rule-2); }
 
+/* ---------- ticker: moving programs bar ---------- */
+.ticker {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  background: var(--ink-2);
+  border-bottom: 1px solid var(--rule);
+  overflow: hidden;
+  position: relative;
+}
+.ticker__tag {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 14px;
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--gold);
+  z-index: 2;
+}
+.ticker__viewport {
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  mask-image: linear-gradient(90deg, transparent 0, black 32px, black calc(100% - 32px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, black 32px, black calc(100% - 32px), transparent 100%);
+}
+.ticker__viewport:hover .ticker__track,
+.ticker__viewport:focus-within .ticker__track { animation-play-state: paused; }
+.ticker__track {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  padding: 9px 10px;
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  animation: tickerScroll 55s linear infinite;
+  will-change: transform;
+}
+.ticker__item { display: inline-flex; align-items: center; }
+.ticker__dot { color: var(--gold); font-size: .52rem; opacity: .85; }
+@keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .ticker__track { animation: none; }
+  .ticker__viewport { overflow-x: auto; }
+}
+@media print {
+  .ticker { display: none; }
+}
+@media (max-width: 760px) {
+  .ticker__tag { padding: 8px 10px; font-size: .54rem; }
+  .ticker__track { font-size: .6rem; animation-duration: 38s; }
+}
+
 .core__group {
   display: flex;
   gap: 2px;

@@ -103,6 +103,23 @@
     });
   }
 
+  /* ---------------- ticker: every program worked in ---------------- */
+  function renderTicker() {
+    var host = $("#tickerTrack");
+    if (!host) return;
+    var items = [];
+    DATA.shafts.forEach(function (s) {
+      items.push(s.numeral + " · " + s.name + " (" + s.veins.length + ")");
+    });
+    DATA.sealed.forEach(function (s) {
+      items.push(s.program + " — SEALED");
+    });
+    var html = items.map(function (it) {
+      return '<span class="ticker__item">' + esc(it) + '</span><i class="ticker__dot" aria-hidden="true">◆</i>';
+    }).join("");
+    host.innerHTML = html + html;
+  }
+
   /* ---------------- veins ---------------- */
 
   function triadHtml(triad) {
@@ -707,6 +724,7 @@
   function boot() {
     renderShafts();
     renderCore();
+    renderTicker();
     renderTailings();
     renderSealed();
     renderMethod();
